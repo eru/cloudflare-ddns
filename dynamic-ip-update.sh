@@ -50,7 +50,7 @@ JSON=$(curl -s -X GET https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_re
 
 # Get domain a record id
 echo "Serching $DOMAIN A record..."
-RECORD_ID=$(echo $JSON | jq -r ".result[] | select(.name == \"tndl.net\") | select(.type == \"A\") | .id")
+RECORD_ID=$(echo $JSON | jq -r ".result[] | select(.name == \"$DOMAIN\") | select(.type == \"A\") | .id")
 echo "$DOMAIN A record id is $RECORD_ID""."$'\n'
 
 # Set IP Address
@@ -60,7 +60,7 @@ echo "cloudflare server says: $RESULT"$'\n'
 
 # Get domain aaaa record id
 echo "Serching $DOMAIN AAAA record..."
-RECORD_ID=$(echo $JSON | jq -r ".result[] | select(.name == \"tndl.net\") | select(.type == \"AAAA\") | .id")
+RECORD_ID=$(echo $JSON | jq -r ".result[] | select(.name == \"$DOMAIN\") | select(.type == \"AAAA\") | .id")
 echo "$DOMAIN AAAA record id is $RECORD_ID""."$'\n'
 
 # Set IP Address
