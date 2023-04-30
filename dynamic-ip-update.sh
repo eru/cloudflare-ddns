@@ -42,6 +42,10 @@ JSON=$(curl -s -X GET https://api.cloudflare.com/client/v4/zones -H "X-Auth-Emai
 # Get zone id
 echo "Serching $ZONE zone..."
 ZONE_ID=$(echo $JSON | jq -r ".result[] | select(.name == \"$ZONE\") | .id")
+if [ -z "$ZONE_ID" ]; then
+  echo "$ZONE zone not found."
+  exit 1
+fi
 echo "$ZONE zone id is $ZONE_ID""."$'\n'
 
 # Get records
@@ -51,21 +55,29 @@ JSON=$(curl -s -X GET https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_re
 # Get domain a record id
 echo "Serching $DOMAIN A record..."
 RECORD_ID=$(echo $JSON | jq -r ".result[] | select(.name == \"$DOMAIN\") | select(.type == \"A\") | .id")
-echo "$DOMAIN A record id is $RECORD_ID""."$'\n'
+if [ -n "$RECORD_ID" ]; then
+  echo "$DOMAIN A record id is $RECORD_ID""."$'\n'
 
-# Set IP Address
-echo "Recode update in progress..."
-RESULT=$(curl -s -X PUT https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID -H "X-Auth-Email: $X_AUTH_EMAIL" -H "X-Auth-Key: $X_AUTH_KEY" -H "Content-Type: application/json" --data "{\"type\": \"A\", \"name\": \"$DOMAIN\", \"content\": \"$GLOBAL_IP_V4\", \"proxied\": true}" | jq -r ".result")
-echo "cloudflare server says: $RESULT"$'\n'
+  # Set IP Address
+  echo "Recode update in progress..."
+  RESULT=$(curl -s -X PUT https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID -H "X-Auth-Email: $X_AUTH_EMAIL" -H "X-Auth-Key: $X_AUTH_KEY" -H "Content-Type: application/json" --data "{\"type\": \"A\", \"name\": \"$DOMAIN\", \"content\": \"$GLOBAL_IP_V4\", \"proxied\": true}" | jq -r ".result")
+  echo "cloudflare server says: $RESULT"$'\n'
+else
+  echo "$DOMAIN A record not found. Skipped."$'\n'
+fi
 
 # Get domain aaaa record id
 echo "Serching $DOMAIN AAAA record..."
 RECORD_ID=$(echo $JSON | jq -r ".result[] | select(.name == \"$DOMAIN\") | select(.type == \"AAAA\") | .id")
-echo "$DOMAIN AAAA record id is $RECORD_ID""."$'\n'
+if [ -n "$RECORD_ID" ]; then
+  echo "$DOMAIN AAAA record id is $RECORD_ID""."$'\n'
 
-# Set IP Address
-echo "Recode update in progress..."
-RESULT=$(curl -s -X PUT https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID -H "X-Auth-Email: $X_AUTH_EMAIL" -H "X-Auth-Key: $X_AUTH_KEY" -H "Content-Type: application/json" --data "{\"type\": \"AAAA\", \"name\": \"$DOMAIN\", \"content\": \"$GLOBAL_IP_V6\", \"proxied\": true}" | jq -r ".result")
-echo "cloudflare server says: $RESULT"$'\n'
+  # Set IP Address
+  echo "Recode update in progress..."
+  RESULT=$(curl -s -X PUT https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID -H "X-Auth-Email: $X_AUTH_EMAIL" -H "X-Auth-Key: $X_AUTH_KEY" -H "Content-Type: application/json" --data "{\"type\": \"AAAA\", \"name\": \"$DOMAIN\", \"content\": \"$GLOBAL_IP_V6\", \"proxied\": true}" | jq -r ".result")
+  echo "cloudflare server says: $RESULT"$'\n'
+else
+  echo "$DOMAIN AAAA record not found. Skipped."$'\n'
+fi
 
 echo "Script is done!"$'\n'
