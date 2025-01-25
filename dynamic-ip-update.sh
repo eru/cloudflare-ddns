@@ -24,6 +24,9 @@ if [ -z "$DEVICE" ]; then
   echo "Require DEVICE: ethernet device. (e.g. eth0)"
   ERROR="1"
 fi
+if [ -z "$PROXIED" ]; then
+  PROXIED="true"
+fi
 if [ -n "$ERROR" ]; then
   echo 'usage: X_AUTH_EMAIL="johnappleseed@example.com" X_AUTH_KEY="123abc456def789ghi" ZONE="example.com" DOMAIN="www.example.com" DEVICE="eth0" dynamic-ip-update.sh'
   exit 1
@@ -60,7 +63,7 @@ if [ -n "$RECORD_ID" ]; then
 
   # Set IP Address
   echo "Recode update in progress..."
-  RESULT=$(curl -s -X PUT https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID -H "X-Auth-Email: $X_AUTH_EMAIL" -H "X-Auth-Key: $X_AUTH_KEY" -H "Content-Type: application/json" --data "{\"type\": \"A\", \"name\": \"$DOMAIN\", \"content\": \"$GLOBAL_IP_V4\", \"proxied\": true}" | jq -r ".result")
+  RESULT=$(curl -s -X PUT https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID -H "X-Auth-Email: $X_AUTH_EMAIL" -H "X-Auth-Key: $X_AUTH_KEY" -H "Content-Type: application/json" --data "{\"type\": \"A\", \"name\": \"$DOMAIN\", \"content\": \"$GLOBAL_IP_V4\", \"proxied\": $PROXIED}" | jq -r ".result")
   echo "cloudflare server says: $RESULT"$'\n'
 else
   echo "$DOMAIN A record not found. Skipped."$'\n'
@@ -74,7 +77,7 @@ if [ -n "$RECORD_ID" ]; then
 
   # Set IP Address
   echo "Recode update in progress..."
-  RESULT=$(curl -s -X PUT https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID -H "X-Auth-Email: $X_AUTH_EMAIL" -H "X-Auth-Key: $X_AUTH_KEY" -H "Content-Type: application/json" --data "{\"type\": \"AAAA\", \"name\": \"$DOMAIN\", \"content\": \"$GLOBAL_IP_V6\", \"proxied\": true}" | jq -r ".result")
+  RESULT=$(curl -s -X PUT https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID -H "X-Auth-Email: $X_AUTH_EMAIL" -H "X-Auth-Key: $X_AUTH_KEY" -H "Content-Type: application/json" --data "{\"type\": \"AAAA\", \"name\": \"$DOMAIN\", \"content\": \"$GLOBAL_IP_V6\", \"proxied\": $PROXIED}" | jq -r ".result")
   echo "cloudflare server says: $RESULT"$'\n'
 else
   echo "$DOMAIN AAAA record not found. Skipped."$'\n'
